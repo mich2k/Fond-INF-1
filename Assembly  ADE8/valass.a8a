@@ -1,9 +1,0 @@
-		LD		A
-		CMPv	0
-		JLs		Negativo
-		JMP		Store 
-Negativo:	NEG 
-Store:	ST B 
-Fine:	JMP Fine 
-A:	17h 
-B:	00h

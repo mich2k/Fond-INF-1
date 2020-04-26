@@ -1,5 +1,0 @@
-﻿  is_gif.c
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\30\EX2\EX2\is_gif.c(22,14): warning C4047: 'return': 'bool' differisce da 'void *' nei livelli di riferimento indiretto
-  main.c
-  Generazione del codice in corso...
-  EX2.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\30\EX2\Debug\EX2.exe

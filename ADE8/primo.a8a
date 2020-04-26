@@ -1,4 +1,0 @@
-	LD	A
-	ST	0d0h
-Fine: jmp Fine
-A:	7

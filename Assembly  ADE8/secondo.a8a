@@ -1,5 +1,0 @@
-Inizio:
-	LD	0d2h
-	st	0d0h
-;A:	0d2h 
-	jmp	Inizio

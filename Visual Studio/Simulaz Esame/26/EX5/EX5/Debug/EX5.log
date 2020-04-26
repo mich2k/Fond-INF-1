@@ -1,4 +1,0 @@
-﻿  leggi_linee.c
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\26\EX5\EX5\leggi_linee.c(37,22): warning C4047: '=': 'char' differisce da 'void *' nei livelli di riferimento indiretto
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\26\EX5\EX5\leggi_linee.c(15): warning C4172: verrà restituito l'indirizzo del valore : p temporaneo o della variabile locale
-  EX5.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\26\EX5\Debug\EX5.exe

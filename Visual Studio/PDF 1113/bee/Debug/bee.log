@@ -1,8 +1,0 @@
-﻿  main.c
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\PDF 1113\bee\main.c(11,35): warning C4133: 'funzione': tipi non compatibili. Da 'char [16]' a 'LPCWSTR'
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\PDF 1113\bee\main.c(12,19): warning C4047: 'funzione': 'char' differisce da 'char [7]' nei livelli di riferimento indiretto
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\PDF 1113\bee\main.c(12,19): warning C4024: 'ex_print': tipi diversi tra il parametro 1 formale e quello effettivo
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\PDF 1113\bee\main.c(13,20): warning C4047: 'funzione': 'char' differisce da 'char [8]' nei livelli di riferimento indiretto
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\PDF 1113\bee\main.c(13,20): warning C4024: 'ex_print': tipi diversi tra il parametro 1 formale e quello effettivo
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\PDF 1113\bee\main.c(15,21): warning C4098: 'main': la funzione 'void' restituisce un valore
-  bee.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\PDF 1113\bee\Debug\bee.exe

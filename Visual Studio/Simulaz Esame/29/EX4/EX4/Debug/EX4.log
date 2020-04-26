@@ -1,5 +1,0 @@
-﻿  ip.c
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\29\EX4\EX4\ip.c(26,19): warning C4474: 'fscanf': sono stati passati troppi argomenti per la stringa di formato
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\29\EX4\EX4\ip.c(26,19): message : con i segnaposto e i relativi parametri sono previsti argomenti variadic 0, ma sono stati specificati quelli 1
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\29\EX4\EX4\ip.c(11,1): warning C4244: 'inizializzazione': conversione da 'long' a 'unsigned short'. Possibile perdita di dati.
-  EX4.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\29\EX4\Debug\EX4.exe

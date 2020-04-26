@@ -1,4 +1,0 @@
-﻿  main.c
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\EX_EXAM_2\EX4\EX4\main.c(6,9): warning C4013: 'bin2bcd' non definita. Verrà considerata come esterna che restituisce un int.
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\EX_EXAM_2\EX4\EX4\main.c(4,1): warning C4244: 'inizializzazione': conversione da 'double' a 'int'. Possibile perdita di dati.
-  EX4.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\EX_EXAM_2\EX4\Debug\EX4.exe

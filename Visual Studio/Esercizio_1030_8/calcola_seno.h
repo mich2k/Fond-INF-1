@@ -1,1 +1,0 @@
-extern double calcola_seno(double x);

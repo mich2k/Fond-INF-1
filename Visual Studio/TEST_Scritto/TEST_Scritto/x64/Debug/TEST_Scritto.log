@@ -1,4 +1,0 @@
-﻿  main.c
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\TEST_Scritto\TEST_Scritto\main.c(5,8): warning C4013: 'printf' non definita. Verrà considerata come esterna che restituisce un int.
-main.obj : error LNK2019: riferimento al simbolo esterno printf non risolto nella funzione main
-C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\TEST_Scritto\x64\Debug\TEST_Scritto.exe : fatal error LNK1120: 1 esterni non risolti
