@@ -1,0 +1,3 @@
+﻿  main.c
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\TEST_Scritto\TEST_Scritto\main.c(8,8): warning C4101: 'x': variabile locale senza riferimenti
+  TEST_Scritto.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\TEST_Scritto\Debug\TEST_Scritto.exe

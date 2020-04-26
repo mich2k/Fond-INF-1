@@ -1,0 +1,4 @@
+﻿  main.c
+C:\Users\Michele\Desktop\Fond. INF 1\Random\test_string\test_string\main.c(6,24): warning C4013: 'calloc' non definita. Verrà considerata come esterna che restituisce un int.
+C:\Users\Michele\Desktop\Fond. INF 1\Random\test_string\test_string\main.c(6,1): warning C4047: 'inizializzazione': 'char *' differisce da 'int' nei livelli di riferimento indiretto
+  test_string.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Random\test_string\Debug\test_string.exe

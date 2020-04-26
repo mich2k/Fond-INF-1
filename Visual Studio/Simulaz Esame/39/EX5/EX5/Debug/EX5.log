@@ -1,0 +1,8 @@
+﻿  main.c
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\39\EX5\EX5\main.c(6,34): error C2065: 'i': identificatore non dichiarato
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\39\EX5\EX5\main.c(6,32): error C2088: '[': non valido per struct
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\39\EX5\EX5\main.c(6,36): error C2198: 'tirocinio_load': argomenti insufficienti per una chiamata
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\39\EX5\EX5\main.c(4,1): error C2440: 'inizializzazione': impossibile convertire da 'void *' a 'tirocinio'
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\39\EX5\EX5\main.c(8,3): error C2143: errore di sintassi: '{' mancante prima di ']'
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\39\EX5\EX5\main.c(8,3): error C2059: errore di sintassi: ']'
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\39\EX5\EX5\main.c(8,4): error C2059: errore di sintassi: ')'

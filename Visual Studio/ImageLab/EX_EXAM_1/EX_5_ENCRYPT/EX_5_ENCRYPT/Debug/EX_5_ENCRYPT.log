@@ -1,0 +1,3 @@
+﻿  main.c
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\EX_EXAM\EX_5_ENCRYPT\EX_5_ENCRYPT\main.c(12,9): warning C4013: 'encrypt' non definita. Verrà considerata come esterna che restituisce un int.
+  EX_5_ENCRYPT.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\EX_EXAM\EX_5_ENCRYPT\Debug\EX_5_ENCRYPT.exe

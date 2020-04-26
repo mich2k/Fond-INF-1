@@ -1,0 +1,1 @@
+ciao_ printfciao_puntatore char printfciao_puntatore char putc

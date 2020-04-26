@@ -1,0 +1,5 @@
+﻿  main.c
+  matrix.c
+  Generazione del codice in corso...
+MSVCRTD.lib(exe_main.obj) : error LNK2019: riferimento al simbolo esterno _main non risolto nella funzione "int __cdecl invoke_main(void)" (?invoke_main@@YAHXZ)
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\30\EX4\Debug\EX4.exe : fatal error LNK1120: 1 esterni non risolti

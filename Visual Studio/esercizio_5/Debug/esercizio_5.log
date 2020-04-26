@@ -1,0 +1,4 @@
+﻿  main.c
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\esercizio_5\main.c(27,1): warning C4244: 'inizializzazione': conversione da 'double' a 'int'. Possibile perdita di dati.
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\esercizio_5\main.c(28,1): warning C4244: 'inizializzazione': conversione da 'double' a 'int'. Possibile perdita di dati.
+  esercizio_5.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\esercizio_5\Debug\esercizio_5.exe

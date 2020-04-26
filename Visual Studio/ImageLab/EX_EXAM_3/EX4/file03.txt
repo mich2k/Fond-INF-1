@@ -1,0 +1,706 @@
+
+                Techniques Towards
+        Automatic Visual Obstacle Avoidance
+
+
+                 Hans P. Moravec
+
+       Stanford University, February 27, 1976
+
+
+Abstract
+
+	This paper describes some components of a working system which
+drives a vehicle through cluttered real world environments under
+computer control, guided by images perceived through an onboard
+television camera. The emphasis is on reliable and fast low level
+visual techniques which determine the existence and location of
+objects in the world, but do not identify them.  They include an
+interest operator for choosing distinctive regions in images, a
+correlator for finding matching regions in similar images, a geometric
+camera solver which determines camera displacement and distance to
+objects from motion stereo information and an automatic distortion
+corrector which compensates for camera imperfections.
+
+
+Keywords
+
+Computer vision, obstacle avoidance, correlation, image processing,
+pattern recognition, navigation, guidance
+
+Introduction
+
+	This report describes work towards autonomous vehicles able to
+maneuver through cluttered environments.  The emphasis has been on
+visual techniques which locate the clutter in three dimensions, but do
+not determine its nature.
+
+	Our hardware includes an electric vehicle, called the cart,
+remotely controlled over a citizens band radio link by a PDP-KL10. It
+carries a black and white television camera whose picture is broadcast
+over a UHF channel, and received and occasionally digitized by the
+computer. The vehicle has drive motors for the rear wheels, a steering
+motor coupled to a steering bar arrangement on the front wheels, and a
+motor controlling the camera pan angle.  Each can be commanded to run
+forward or backward. There is a potentiometer on the steering and pan
+linkages which enables them to be commanded to point straight ahead.
+The mechanical arrangements are crude, the motor speeds are
+unregulated, and there is no feedback to the computer other than the
+video from the camera.  Overall dead reckoning errors are on the order
+of 30%.  Most of the computer controlled runs so far have been with
+the camera pointed straight ahead and the vehicle moving forward in
+two foot increments, punctuated by long pauses, during which the
+images are processed.
+
+	The key elements in the vision software are two primitive
+picture operators and a geometric camera solver.  The interest
+operator locates small patches, called features, scattered more or
+less uniformly over images and having the property that the
+corresponding points are likely unambiguously findable in subsequent
+images.  The binary search correlator takes features in one image and
+attempts to find them in subsequent images, altered slightly by
+vehicle motion.  Both operators make extensive use of versions of the
+pictures reduced by factors of 2, 4, 8, 16 etc. in linear dimension.
+The camera solver is given the location of at least five corresponding
+features in two pictures, and deduces the relative camera positions
+and orientations and the three dimensional locations of the
+features. More information about the solver may be found in [Gennery].
+
+	Peripheral routines include a camera calibrator which computes
+a two dimensional polynomial for correcting distortions of a camera
+when the camera is placed in front of a screen containing a square
+array of black spots on a white background.  Other operators sometimes
+used are a high pass filter, a high frequency noise remover, a
+histogram normalizer, a vertical sync loss corrector, a picture
+comparator and an operator which reduces pictures by other than powers
+of two.
+
+
+Interest Operator
+
+	This routine is used to acquire new features in a scene.  It
+tries to select a relatively uniform scattering, to minimize the
+probability that important obstacles will be missed, and also attempts
+to choose areas which can be found easily by the correlator.  Both
+goals are achieved by returning regions which are local maxima of a
+directional variance measure.  Featureless areas and simple edges
+(which have no variance in the direction of the edge) are avoided by
+this process.
+
+	Directional variance is measured over small square windows of
+typically 4 to 8 pixels on a side. Sums of squares of differences of
+pixels adjacent in each of four directions (horizontal, vertical and
+two diagonals) over the window are obtained. The variance of the
+window is the minimum of these four sums.
+
+	An earlier version of the algorithm computed this function
+over a grid of adjacent non-overlapping windows.  A window was
+declared a local maximum if it was larger than any of its eight
+immediate neighbors.  Interesting regions were sometimes missed by
+this arrangement when the high contrast parts straddled the boundaries
+of windows.
+
+	Performance has been improved by increasing the number of
+windows by a factor of four, including sets shifted half a window size
+horizontally, vertically and diagonally.  To be a local maximum, a
+window must now be the largest of the twenty five which overlap and
+contact it.
+
+	Since the variance measure depends on adjacent pixel
+differences, it responds to high frequency noise in the image. This
+undesirable effect is circumvented by applying the interest operator
+to a reduced version of the picture, where noise is lessened by the
+averaging.  The smaller image also means a faster program.  The
+standard procedure is to choose the power of two reduction in which
+the specified window size is reduced to 2 or 3 pixels on a side.  For
+a window size of 8 the operator is applied to the picture reduced
+twice, i.e. by a linear factor of 4.
+
+	The local maxima found are stored in an array, sorted in order
+of decreasing variance.
+
+	The entire process, critical parts of which are hand coded in
+machine language, on a typical 260 by 240 image using 8 by 8 windows
+takes about 75 milliseconds on the KL-10.
+
+
+Binary Search Correlator
+
+	Given a feature in one picture, this routine attempts to find
+the corresponding region in a second image.
+
+	The correlator is given a source position in the first
+picture, a rectangular search window (often the whole image) in the
+second picture, and and a feature window size n (8 is typical),
+representing the side of a square window.
+
+	The search uses a coarse to fine strategy, which begins in
+reduced versions of the pictures.  The order of reduction is chosen to
+make the smaller dimension of the search rectangle between n and 2n
+pixels. An n by n window in the shrunken source image, centered around
+the desired feature, is considered. Because this version of the image
+is so small, the window covers about 25% of the picture, if the search
+window is the entire picture. A correlation coefficient is calculated
+for each possible placement of the source window in the search area,
+quantizing the positioning to whole pixel steps.  If the search window
+is exactly 2n by 2n, there are (n+1)^2 positions. The one which
+results in the highest coefficient is used as the search area for the
+next level of refinement.
+
+	The process is repeated at the next lower order of reduction,
+i.e. with pictures that are linearly twice as large.  An n by n window
+is again centered around the location of the source feature, and is
+searched for in the area that corresponds to the winning window in the
+previous search, which expands to 2n by 2n at the new level of
+reduction.
+
+	This goes on in successively larger versions of the pictures
+until an n by n window is matched in the original unreduced images.
+
+	The program thus locates a huge general area around the
+feature in a very coarse version of the images, and successively
+refines the position, finding smaller and smaller areas in finer and
+finer representations. The work at each level is approximately that of
+finding an n by n window in a 2n by 2n area, and there are log[2](w/n)
+levels, where w is the smaller dimension of the search rectangle, in
+unreduced picture pixels.
+
+	This approach has many advantages over a simple pass of of a
+correlation coefficient computation over the search window.  The most
+obvious is speed. A scan of an 8 by 8 window over a 256 by 256 picture
+would require 249x249x8x8 comparisons of individual pixels.  My method
+needs only about 5x81x8x8, about 150 times fewer.  The advantage is
+lower for smaller search areas.  Perhaps more important is the fact
+that the simple method exhibits a serious jigsaw puzzle effect. The 8
+by 8 patch is matched without any reference to context, and a match is
+often found in totally unrelated parts of the picture.  The binary
+search technique uses the general context to guide the high resolution
+comparisons. This makes possible yet another speedup, because smaller
+windows can be used. Window sizes as small as 2 by 2 work reasonably
+well. The searches at very coarse levels rarely return mismatches,
+possibly because noise is averaged out in the reduction process,
+causing comparisons to be more stable.  Reduced images are also
+tolerant of geometric distortions.
+
+
+Correlation coefficients
+
+	The problem is, given two n by n arrays of pixels, referred to
+as A[i,j] and B[i,j], determine how alike they are.
+
+	One of the simplest comparisons is:
+
+             Sum(i,j = [0,0]:[n,n]) (A[i,j]-B[i,j])^2
+
+If the camera did exact photometric measurements, and if lighting conditions
+remained unchanged between frames, this measure would be ideal. Unfortunately
+the camera response varies from place to place on the camera field due
+to the nature of the optics and complicated vidicon effects, from
+scene to scene because of
+target voltage response to illumination, and from time to time due to
+changes in battery voltage. In spite of these drawbacks the measure has
+been used successfully.
+
+Normalized Correlation
+
+	Another alternative is "normalized correlation", the RMS
+average displacement of co-ordinate pairs (A[i,j],B[i,j]) from a least
+squares regression line relating A to B. Let a[i,j] = A[i,j]-mean(A)
+and b[i,j] = B[i,j]-mean(B), mean(A) and mean(B) being the means over
+the entire window.  The normalized correlation coefficient is defined
+as:
+
+          sigma  =  Sum(i,j = [0,0]:[n,n]) a[i,j]b[i,j] /
+		      sqrt( (Sum(i,j = [0,0]:[n,n]) a[i,j]^2) x
+                            (Sum(i,j = [0,0]:[n,n]) b[i,j]^2) )
+
+Normalized correlation is invariant under all linear transformations
+of the values of A and B.
+
+ 	The complete contrast insensitivity this implies is a needless
+waste of information, because contrast changes in actual pictures
+are relatively small from frame to frame. In addition, the measure
+has a degeneracy when all the values of either A or B are the same.
+This will happen often if the search window contains uniformly shaded
+areas, and must be handled by a special test. A different measure is
+called for.
+
+
+Pseudo-normalized Correlation
+
+	Although the correlation coefficient itself remains unchanged,
+the "line of best fit" is different when calculated from A to B than
+from B to A:
+
+for the best fit of A to B, b = ka,  we wish to find k which minimizes
+
+       Sum (ka-b)^2     this is     k  =  Sum(ab)/Sum(a^2)
+
+the line can be expressed as
+
+             a   =   b sigma sqrt(Sum(a^2)) / sqrt(Sum(b^2))
+
+for the best fit of B to A, a = kb,  we wish to find k which minimizes
+
+Sum((kb-a)^2)     this is     k  =  Sum(ab)/Sum(b^2)
+
+the line can be expressed as
+
+            b   =   a sigma sqrt(Sum(b^2))/sqrt(Sum(a^2))
+
+these are equivalent if sigma is unity, i.e. if the correlation is
+perfect. Since for our application, the comparison of two picture
+patches, there is no particular reason for choosing one over the
+other, we compromise and choose a line equidistant from the two,
+removing the asymmetry between A and B:
+
+          b   =   a sqrt(Sum(b^2)) / sqrt(Sum(a^2))
+
+or equivalently
+
+          a   =   b sqrt((Sum(a^2)) / sqrt(Sum(b^2))
+
+
+We will use this to obtain a correlation measure more suited
+to our needs.
+
+	Small contrast changes should be tolerated, large ones should
+not. Contrast is expressed by the slope of the line of best fit, a
+slope of unity denoting a perfect match, slopes of zero and infinity
+indicating that one or the other of the patches has no variations in
+intensity.  Consider the normalized dot product of the line of best
+fit with a line of unity slope. Since this is the cosine of the angle
+between them, it will be unity for a perfect match, and very near
+unity for small contrast differences, since the cosine is flat around
+zero angle, and zero for a negative correlation. If we were to
+multiply this dot product by the normalized correlation coefficient,
+we would obtain a measure which was unity only for perfect correlation
+with no contrast differences, dropping rapidly with lessening
+correlation, and slowly at first and then rapidly with increasing
+contrast differences.
+
+	This measure still has a few flaws. If one of the patches is
+without intensity variations, the normalized correlation coefficient
+becomes 0/0 and the dot product 1/sqrt(2).  In fact we want our
+measure to be zero in this case. This can be arranged if we multiply
+the normalized coefficient by the cosine of twice the angle between
+the correlation line and a line of slope 1. This cosine will be zero
+for lines of slope zero or infinity, and the limit of the product with
+the normalized correlation coefficient will also be zero in those
+cases. In addition, perfect negative correlation will again appear as
+minus unity, which might be an advantage in some circumstances.
+
+	Deriving an expression for this measure, we note that the
+cosine of our "compromise" correlation line with one of unity slope is
+
+    (sqrt(Sum(a^2)) + sqrt(Sum(b^2))) / sqrt(2 (Sum(a^2) + Sum(b^2)))
+
+To convert this to the cosine of twice the angle with a=b, we use the
+identity
+
+                     cos(2t)  =  2 cos^2(t) - 1
+
+giving us
+
+  2 ( sqrt(Sum(a^2)) + sqrt(Sum(b^2)) )^2 / 2 (Sum(a^2) + Sum(b^2)) - 1
+
+       =    2 sqrt(Sum(a^2) Sum(b^2)) / (Sum(a^2) + Sum(b^2))
+
+multiplying by the normalized correlation coefficient, we get
+
+           2 sqrt(Sum(a^2) Sum(b^2)) /  (Sum(a^2) + Sum(b^2)) 
+                 x   Sum(ab) /  sqrt(Sum(a^2) Sum(b^2))
+
+       =    2 Sum(ab)) / (Sum(a^2) + Sum(b^2))
+
+	Note that whereas normalized correlation consists of the sum
+of the pairwise products of A and B divided by the geometric mean of
+the sum of their squares, this new measure, referred to as
+pseudo-normalized correlation, is the sum of the products divided by
+the arithmetic mean of the sums of the squares.  Since it involves an
+addition and a halving rather than a multiplication and a square root,
+it is actually easier to calculate. The prettiness of the result leads
+me to suspect that a more elegant derivation exists.
+
+	This pseudo-normalized measure works as well as any of the
+alternatives, and is easy to compute. It is the standard correlation
+measure in cart software.
+
+Timing
+
+	The formula above is expressed in terms of A and B with the
+means subtracted out. It can be translated into an expression
+involving Sum(A), Sum(A^2), Sum(B), Sum(B^2) and Sum((A-B)^2). By
+evaluating the terms involving only A, the source window, outside of
+the main correlation loop, the work in the inner loop can be reduced
+to evaluating Sum(B), Sum(B^2) and Sum((A-B)^2).  This is done in
+three PDP-10 machine instructions per point by using a table in which
+entry i contains both i and i^2 (in subfields), and by generating in
+line code representing the source window, three instructions per
+pixel, eliminating the need for inner loop end tests and enabling the
+A-B computation to be done during indexing.
+
+	Each pixel comparison takes about one microsecond. The time
+required to locate an 8 by 8 window in a 16 by 16 search area is about
+10 milliseconds. A single feature requires 5 such searches, for a
+total per feature time of 50 ms.
+
+	One of the three instructions could be eliminated if Sum(B)
+and Sum(B^2) were precomputed for every position in the picture. This
+can be done incrementally, involving examination of each pixel only
+twice, and would result in an overall speedup if many features are to
+be searched for in the same general area.
+
+	The correlator has approximately a 10 percent error rate on
+features selected by the interest operator in our sample pictures.
+Typical image pairs are generally taken about two feet apart with a 60
+degree field of view camera.
+
+
+Scale Changes
+
+	As the vehicle moves forward the image seen by the camera
+changes.  The major component of this perspective transformation is an
+enlargement of nearby objects. It would probably be advantageous for
+the correlator to consider the possibility that the feature it is
+looking for has changed size. An attempt at this has been made.
+
+	In the basic system the digitized images are reduced by powers
+of two, and the correlator always compares two equally reduced images.
+Applying it to two images reduced by different amounts is equivalent
+to considering a power of two scale change. If the correlation measure
+of the best match is better in such an asymmetric comparison, a scale
+change has probably been detected.
+
+	Powers of two clearly do not provide enough scale resolution.
+Higher resolution could be provided by generating sets of images
+reduced by factors less than two.  Core size limits the number of
+intermediate reductions that can be handled by this method, since each
+new step essentially involves duplicating a full set of binary
+reductions of the pictures. A compromise has been reached by
+generating a picture 2^(2/3) as large as each of the binary steps. By
+comparing two pictures at the same level we get a scale change of
+unity, by comparing a power of two with a 2^(2/3) reduced one we get
+2^(1/3) reduction, by comparing a 2^(2/3) reduced one with one reduced
+by an factor of two we get an effective factor of 2^(2/3) reduction,
+and finally by comparing two at adjacent binary levels we get a full
+factor of 2. Thus two steps intermediate between binary reductions are
+obtained at the cost of only a single extra set of pictures.
+
+	Since correlating across reduction levels adds to the cost in
+proportion to the number of scales tested, the current algorithms do
+this only if the match at the 1:1 reduction is not sufficiently good
+(a coefficient in excess of about .7).
+
+	The results are disappointing. This method causes success on
+some features that fail when scale changes are not considered, but
+also introduces approximately a corresponding number of new errors.
+It seems most helpful at the intermediate stages of the binary
+search. Apparently in very high levels of reduction the background
+dominates, small nearby objects are blurred out of existence, and at
+very low levels the type of feature the interest operator picks
+(corners, etc.) are largely unchanged by scale changes. At
+intermediate levels, the correlation window covers large nearby
+objects, such as rocks, bushes and chairs (in our samples), and scale
+change is important.
+
+	Experiments with ways of applying trial reductions more
+selectively will be conducted in the near future.
+
+
+Camera Calibration
+
+	Optics, especially electron optics, tend to have peculiar
+geometric properties. If the camera is to be used as a measuring
+instrument such distortions should be taken into account.
+
+	To this end we have written a camera calibration program which
+is given an image of a square array of black spots on a white
+background, the ratio of the array center to lens center distance and
+the spot spacing, and which computes a distortion polynomial that
+enables position in the image to be translated accurately to angle in
+space.
+
+	The program tolerates a wide range of spot parameters (about 3
+spots across the width of an image to 12 spots across), arbitrary
+image rotation, and is very robust. After being intensely fiddled with
+to work successfully on an initial set of 20 widely varying images, it
+has worked without error on 60 widely differing new images. The test
+pattern for the cart is a ten foot square painted on a wall, with two
+inch spots at one foot intervals.
+
+	The algorithm reads in an image of such an array, and begins
+by determining its approximate spacing and orientation.  It trims the
+picture to make it square, reduces it by averaging to 64 by 64,
+calculates the fourier transform of the reduced image and takes its
+power spectrum, arriving at a 2D transform symmetric about the origin,
+and having strong peaks at frequencies corresponding to the horizontal
+and vertical spacing and half the diagonal spacing, with weaker peaks
+at the harmonics.  It multiplies each point i,j in this transform by
+point -j,i and points j-i,j+i and i+j,j-i, effectively folding the
+primary peaks onto one another. The strongest peak in the 90 degree
+wedge around the y axis gives the spacing and orientation information
+needed by the next part of the process.
+
+	The interest operator is applied to the original image, and
+the most interesting feature in the central portion of the picture is
+assumed to be a spot, and used as starting seed to find the others.  A
+special operator examines a window surrounding this position,
+generates a histogram of intensity values within the window, decides a
+threshold for seperating the black spot from the white background, and
+calculates the centroid and first and second moment of the spot.  This
+operator is again applied at a displacement from the first centroid
+indicated by the orientation and spacing of the grid, and so on, the
+region of found spots growing outward from the seed.
+
+	A least squares polynomial in two variables relating the
+actual position of the spots to the ideal position is then generated.
+
+
+Results
+
+	During the past year early versions of the routines described
+were used in a program which drove the vehicle in a straight lines or
+roughly uniform arcs by acquiring and tracking features in the
+vicinity of the horizon, and using their motion from frame to frame to
+build up a model of vehicle response, and to servo on the desired
+path. Curved paths cannot be done very accurately because the current
+hardware provides no facilities for sending back data other than
+camera image. In particular no data about distance travelled was
+returned, it having to be estimated from drive motor on time. Steering
+angle also had to be guessed from steering motor timing. The program
+tried to deduce reasonable coefficients for these functions by
+observing the differential effects of small corrections. Since the
+motor speeds are unregulated, the parameters change with terrain and
+battery voltage.
+
+	In spite of these problems the runs were quite successful.
+The cart proceeds in one second spurts, each of which takes it forward
+about two feet. A picture is digitized after each such step, and the
+correlator and, if necessary, interest operator are applied,
+displacements of the positions of the features from the last picture
+are calculated, bad matches are eliminated by a clustering technique
+which eliminates features not agreeing in displacement with the
+majority, steering correction is calculated, motor parameters are
+updated, and commands for another step are transmitted.  On the KA-10
+the time taken for this process was about 35 seconds real time per
+move without displays, or one minute if the digitized image and other
+interesting information was displayed. Several runs of between 20 and
+60 steps were completed, both indoors and outdoors, in bare and
+cluttered conditions. The runs were usually terminated by a failure of
+the radio control link, a 100 mw model airplane controller, disrupting
+the steering timing and causing the vehicle to veer sharply in one or
+the other direction.  We have recently installed a pair of high
+quality mobile CB tranceivers, essentially solving that problem.  They
+also provide the opportunity for an eventual data link from the
+vehicle, as soon as the control logic is upgraded.  The video link has
+also been improved by addition of a low noise antenna preamplifier at
+the receiver.
+
+	Several runs involving the distortion corrector, camera solver
+and new versions of the interest operator and correlator have been
+completed.  The new program trys to determine the distance to the
+features by applying the camera solver after tracking them through
+several images. The performance is poor. The camera solver results are
+erratic, seemingly due to the degenerate nature of the
+solution. Objects lying near the camera axis (most of the scene)
+provide no depth information.
+
+Next:
+
+We are trying a new approach, replacing the camera pan mechanism with
+one which provides 21 inches of side to side motion, in three 7 in. steps.
+This should provide adequate parallax, and also close spacing to make the
+correlations easy. Since the camera motion parameters will be known the
+correlation searches become one dimensional, and an absolute scale factor
+is known. The camera solving is also easy. The idea is to locate nearby
+features in 3D at each vehicle stop.  The vehicle motion can be found from
+the apparent feature motions between stops. The location of the ground can
+be deduced from the camera height and orientation.
+
+
+References
+
+Gennery, D.B., "A Stereo Vision System for An Exploring Vehicle"
+Proceedings of the Fifth IJCAI, 1977.
+
+
+------------------------------------------------------------------------
+
+
+                Techniques Towards
+        Automatic Visual Obstacle Avoidance
+
+                    Hans Moravec
+
+
+                December 1977 update
+
+
+Introduction
+
+	In the previous report we described a system which
+successfully drove our vehicle, the cart, in straight line or curved
+trajectories by visually servoing on distant features. This horizon
+tracking system is being extended to the task of locating and
+measuring the distance of nearby features with the eventual goal of
+obstacle avoidance.
+
+	The cart hardware has been considerably improved, and much of
+the software has been rewritten because it was apparent that the old
+configuration, though adequate for the relatively undemanding horizon
+tracking task, could not reasonably be extended to obstacle avoidance.
+Further changes are underway.
+
+Hardware
+
+	Runs with the old system were generally terminated by a
+failure of the radio control link, which was a model airplane
+controller modified for digital transmission. The transmitter had a
+power output of under 100 milliwatts. The link has been replaced by a
+pair of standard citizen's band mobile tranceivers, suitably
+modified. The power output is selectable between 1 watt, 4 watts and
+an illegal 9 watts for emergencies. The one watt setting has proven
+completely adequate thus far. This link is currently used in only one
+direction (from the computer to the vehicle), but, since it provides a
+receiver and transmitter at both ends, can in principle be extended to
+sending back telemetry data.  Some kind of transmit/receive protocol
+will have to be arranged, a matter which we think prudent to delay
+until a small processor which can be programmed to manage it is
+installed on the vehicle.  At the time the CB tranceivers were
+installed the associated electronics, particularly on the vehicle,
+were extensively improved, rebuilt and repackaged.  There is now room
+for installation of a microprocessor to handle local servoing of cart
+functions and data communications, something we hope to do within a
+year.
+
+	A low noise antenna preamplifier has been installed in one of
+our video receivers. This has significantly improved the received
+picture quality. An automatic dc level restoring circuit has been
+added to the video digitizer, resulting in more stable sync detection
+and intensity rendering.
+
+	Nicad batteries and a voltage regulator were installed for the
+camera/video transmitter aboard the vehicle, resulting in greatly
+reduced voltage induced variations in sensitivity and contrast.  The
+motor which drives the steering linkage was replaced after it failed
+by a greatly improved one which draws only one tenth the power, and a
+circuit which regulates its speed by sensing its back EMF.
+
+Software
+
+	The software has also been improved.  The interest operator
+now uses overlapping regions, the correlator uses a better measure of
+correlation, and handles the binary search somewhat differently. Each
+frame is digitized from several receivers, and a fast scanline to
+scanline noise measurement is used to decide which received the best
+signal and should be used in the subsequent steps.  A new version of
+the horizon tracker was written which makes corrections for camera
+geometry and distortions (as described in "Camera Calibration" in the
+last report), and applies the camera solver to measure the distance of
+the perceived features. Features are tracked through as many frames as
+possible, to maximize the baseline, before being given to the camera
+solver.
+
+	Incidental improvements and extensions have been made in the
+graphics and picture processing software used heavily in our work.  We
+have made solid beginnings on a graphics package whose end
+representation is grey scale pictures, represented as two dimensional
+byte arrays. This will supersede earlier vector list and bit raster
+packages. The capabilities of these earlier routines are a subset of
+the abilities of the new ones.  As an example of the new
+possibilities, we have discovered that about four times as many
+readable characters can be put on a grey scale raster as on a bit
+raster with the same number of samples.  This is because the intensity
+can be used to simulate higher resolution.  Samples fractionally
+covered by a hypothetical high resolution character are fractionally
+shaded. The slightly blurry rendition this produces appears to be
+effortlessly reconstructed by the human visual system much in the same
+manner the classical portrait of Lincoln reduced to a 5 by 5 array of
+grey squares is recognizable at a distance. Pushing things to
+extremes, our 480x512 screens can display about 80 lines of 160
+characters each. The page of text you are reading now has been
+displayed, fully typeset in mixed fonts, readably, on the same screens
+by this method.  The grey scale has also allowed us to produce higher
+resolution line drawings, with lines that gradually fade from one
+column to the next along their length. The most exciting graphics we
+have generated with this system are realistic pictures of simulated 3D
+objects, such as planets hanging in space.
+
+Results
+
+	The horizon tracker built with the improved routines has been
+tested in several runs in an indoor environment (a large conference
+room) containing tables, chairs, couches and an open space about 100
+ft long.  The latest version of the program has been fully successful
+in maintaining the heading over this distance.  Comparison runs
+without visual servoing usually end within 50 ft with a collision with
+a wall.  Longer outdoor runs involve more overhead, and have not yet
+been attempted. The program has been run on sequences of pictures from
+older outdoor runs stored on disk, with good results.
+
+	The distance of nearby features calculations (not used
+substantively yet, but important for the upcoming obstacle avoidance
+task), are often erratic, seemingly due to the degenerate nature of
+the solution and our very poor a priori knowledge of the camera motion
+between frames. Objects lying near the camera axis (most of the scene)
+provide no depth information. The results are sufficiently bad that it
+appears unlikely that obstacle avoidance can be made to work reliably
+with exactly this combination of approach and hardware.
+
+Next
+
+	We are trying a new approach, replacing the camera pan
+mechanism with one which provides 21 inches of side to side motion, in
+precise stepping motor controlled steps. Three or four pictures will
+be taken at equal intervals along this 21 inch path at each vehicle
+stop.  This should provide adequate parallax, and also close spacing
+to make the correlations easy. Since the camera motion parameters will
+be known the correlation searches become one dimensional, and an
+absolute scale factor is known.  The camera solving, instead of
+involving five unknown parameters of camera motion as it does now,
+with the baseline completely unknown, involves no camera motion
+parameters. With complete knowledge of relative camera positions,
+distances to perceived features can be determined directly. The idea
+is to locate nearby features in 3D at each vehicle stop.  The vehicle
+motion can be found from the apparent feature motions between
+stops. The location of the ground can be deduced from the camera
+height and orientation, which are known from a priori measurements of
+vehicle dimensions and camera tilt.
+
+	We have made a small number of tests on image pairs similar to
+those that we will receive from the cart when the new hardware is
+installed. The success rate in doing the correlations and distance
+measurements is high enough to give confidence in the eventual success
+of obstacle avoidance attempts by this approach.
+
+
+-------------------------------------------------------------------------
+
+
+                   Techniques Towards
+            Automatic Visual Obstacle Avoidance
+
+                     Hans Moravec
+
+                  March 1978 update
+
+
+Hardware
+
+	The components for the 21 inch of side to side travel camera
+movement mechanism have been ordered. Most have arrived and the are
+being assembled. A stepping motor will provide a precise amount of
+motion either to the right or to the left in response to particular
+sequences on the radio control link.
+
+	The camera motion will provide a known stereo baseline, to
+help overcome some of the problems encountered in the previous
+obstacle avoidance runs. In these, extremely imprecise vehicle motion
+provided the baseline. This proved inadquate for reliable obstacle
+detection with our visual techniques.
+
+
+Software
+
+

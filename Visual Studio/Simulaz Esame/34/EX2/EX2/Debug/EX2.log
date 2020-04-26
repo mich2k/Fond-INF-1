@@ -1,0 +1,4 @@
+﻿  trigonometria.c
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\34\EX2\EX2\trigonometria.c(27,34): warning C4244: 'funzione': conversione da 'unsigned __int64' a 'double'. Possibile perdita di dati.
+C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\34\EX2\EX2\trigonometria.c(28,31): warning C4244: 'funzione': conversione da 'unsigned __int64' a 'unsigned short'. Possibile perdita di dati.
+  EX2.vcxproj -> C:\Users\Michele\Desktop\Fond. INF 1\Visual Studio\Simulaz Esame\34\EX2\Debug\EX2.exe
